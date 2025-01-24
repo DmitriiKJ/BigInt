@@ -62,7 +62,7 @@ int hexSymbolToInt(const char ch)
 	}
 }
 
-int byteToHexSymbol(unsigned char byte)
+char byteToHexSymbol(unsigned char byte)
 {
 
 	if ((int)byte >= 0 && (int)byte <= 9) {
@@ -116,13 +116,25 @@ BigInt::BigInt(std::string num)
 	}
 }
 
-std::string BigInt::toHexString()
+// Each of blocks will be dismantled by 4 bits and converted to hex format
+std::string BigInt::toHexStringFromData(std::vector<unsigned long> blocks)
 {
 	std::string res = "";
+	// We don't need print 0 at the start
+	bool isStart = true;
 
 	for (int i = blocks.size() - 1; i >= 0; i--) {
 		for (int j = 0; j < 8; j++) {
 			char symbol = byteToHexSymbol((unsigned char)(blocks[i] << j * 4 >> 28));
+			if (isStart)
+			{
+				if (symbol == '0') {
+					continue;
+				}
+				else {
+					isStart = !isStart;
+				}
+			}
 			res += symbol;
 		}
 	}
@@ -130,26 +142,114 @@ std::string BigInt::toHexString()
 	return res;
 }
 
-BigInt BigInt::operator+(const BigInt& second)
+std::string BigInt::toHexString()
+{
+	return toHexStringFromData(blocks);
+}
+
+bool BigInt::operator<(const BigInt& second) const
+{
+	// If count of blocks equals we can only compare the last one (it has the biggest part of number)
+	if (this->blocks.size() < second.blocks.size()) return true;
+	else if (this->blocks.size() > second.blocks.size()) return false;
+	else {
+		return this->blocks[this->blocks.size() - 1] < second.blocks[second.blocks.size() - 1];
+	}
+}
+
+bool BigInt::operator<=(const BigInt& second) const
+{
+	// If count of blocks equals we can only compare the last one (it has the biggest part of number)
+	if (this->blocks.size() < second.blocks.size()) return true;
+	else if (this->blocks.size() > second.blocks.size()) return false;
+	else {
+		// Has the same logic with operator < but <=
+		return this->blocks[this->blocks.size() - 1] <= second.blocks[second.blocks.size() - 1];
+	}
+}
+
+bool BigInt::operator>(const BigInt& second) const
+{
+	// If not <= than >
+	return !this->operator<=(second);
+}
+
+bool BigInt::operator>=(const BigInt& second) const
+{
+	// If not < than >=
+	return !this->operator<(second);
+}
+
+bool BigInt::operator==(const BigInt& second) const
+{
+	if(this->blocks.size() == second.blocks.size()) {
+		return this->blocks[this->blocks.size() - 1] == second.blocks[second.blocks.size() - 1];
+	}
+	
+	return false;
+}
+
+bool BigInt::operator!=(const BigInt& second) const
+{
+	return !this->operator==(second);
+}
+
+
+BigInt BigInt::operator+(const BigInt& second) const
+{
+	std::vector<unsigned long> resBlocks;
+
+	int size = std::max(this->blocks.size(), second.blocks.size());
+
+	// If we need to carry a bit from the previous block to the next
+	bool carry = false;
+
+	for (int i = 0; i < size; i++)
+	{
+		unsigned long num1 = this->blocks.size() > i ? this->blocks[i] : 0;
+		unsigned long num2 = second.blocks.size() > i ? second.blocks[i] : 0;
+		// Added two blocks or 0 if one of bigInts has more blocks than another
+		unsigned long thisBlock = num1 + num2;
+
+		resBlocks.push_back(thisBlock);
+
+		// Added bit if need
+		if (carry) {
+			resBlocks[i]++;
+		}
+
+		// If the result of the sum of two blocks / 2 less than both of added blocks or equal 0 with the carry bit we need to carry a bit to the next block (this indicates an overflow) 
+		unsigned long half = thisBlock / 2;
+		if (((half) < num1 && (half) < num2) || (resBlocks[i] == 0 && carry)) {
+			carry = true;
+		}
+		else {
+			carry = false;
+		}
+
+	}
+
+	// If we have't blocks but still have the bit we need to carry - block with 1 (carry bit) will be added 
+	if (carry) {
+		resBlocks.push_back(1);
+	}
+
+	BigInt res = BigInt();
+	res.blocks = resBlocks;
+	return res;
+}
+
+BigInt BigInt::operator-(const BigInt& second) const
 {
 	return BigInt();
 }
 
-BigInt BigInt::operator-(const BigInt& second)
+BigInt BigInt::operator*(const BigInt& second) const
 {
 	return BigInt();
 }
 
-BigInt BigInt::operator*(const BigInt& second)
+BigInt BigInt::operator/(const BigInt& second) const
 {
 	return BigInt();
-}
-
-BigInt BigInt::operator/(const BigInt& second)
-{
-	return BigInt();
-}
-
-BigInt::~BigInt()
-{
 }

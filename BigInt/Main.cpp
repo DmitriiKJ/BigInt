@@ -6,12 +6,15 @@ int main() {
 	/*BigInt bigNum = BigInt("846a927d92f628e928f");
 	cout << bigNum.toHexString() << endl;*/
 
+	BigInt zero = BigInt();
+	cout << "Zero: " << zero.toHexString() << endl;
+
 	// 6983033291595
 	BigInt bigNum1 = BigInt("659dd38034b");
 	cout << "First: " << bigNum1.toHexString() << endl;
 
 	// 42073146227298
-	BigInt bigNum2 = BigInt("2643eaef7a62af474");
+	BigInt bigNum2 = BigInt("2643eaef7a62");
 	cout << "Second: " << bigNum2.toHexString() << endl;
 
 	// Compare
@@ -31,9 +34,14 @@ int main() {
 		cout << "First num and second aren't equal" << endl;
 	}
 
-	// 6983033291595 + 42073146227298 = 49056179518893 (2643eb5518362f7bf)
+	// 6983033291595 + 42073146227298 = 49056179518893 (2C9DC8277DAD)
 	BigInt bigNum3 = bigNum1 + bigNum2;
 	cout << "Sum: " << bigNum3.toHexString() << endl;
+	cout << endl;
+
+	// 42073146227298 - 6983033291595 = 35090112935703 (1FEA0DB77717)
+	BigInt bigNum4 = bigNum2 - bigNum1;
+	cout << "Subtract: " << bigNum4.toHexString() << endl;
 	cout << endl;
 
 	// Test for other functions

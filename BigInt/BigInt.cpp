@@ -139,6 +139,10 @@ std::string BigInt::toHexStringFromData(std::vector<unsigned long> blocks)
 		}
 	}
 
+	if (res.empty()) {
+		return "0";
+	}
+
 	return res;
 }
 
@@ -241,7 +245,50 @@ BigInt BigInt::operator+(const BigInt& second) const
 
 BigInt BigInt::operator-(const BigInt& second) const
 {
-	return BigInt();
+	// At this time BigInt works only with possitive numbers
+	if (this->operator<(second)) {
+		throw "Negative numbers is not enable";
+	}
+
+	std::vector<unsigned long> resBlocks;
+
+	// We know that (this) num more than second 
+	int size = this->blocks.size();
+
+	// If we need to carry a bit to the previous block from the next
+	bool carry = false;
+
+	for (int i = 0; i < size; i++)
+	{
+		unsigned long num1 = this->blocks[i];
+		unsigned long num2 = second.blocks.size() > i ? second.blocks[i] : 0;
+
+		// Subtracted two blocks or 0 if one of bigInts has more blocks than another
+		unsigned long thisBlock = num1 - num2;
+
+		if (carry) {
+			thisBlock--;
+		}
+
+		resBlocks.push_back(thisBlock);
+
+		// Indicates of underflow
+		if (num1 < num2 || (thisBlock + 1 == 0 && carry)) {
+			carry = true;
+		}
+		else {
+			carry = false;
+		}
+	}
+
+	// Remove all 0 blocks at the end of resBlocks
+	while (resBlocks[resBlocks.size() - 1] == 0) {
+		resBlocks.erase(resBlocks.begin() + resBlocks.size() - 1);
+	}
+
+	BigInt res = BigInt();
+	res.blocks = resBlocks;
+	return res;
 }
 
 BigInt BigInt::operator*(const BigInt& second) const

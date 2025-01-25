@@ -43,19 +43,19 @@ int hexSymbolToInt(const char ch)
 	}
 
 	// letter to int
-	switch (ch)
+	switch (toupper(ch))
 	{
-	case 'a':
+	case 'A':
 		return 10;
-	case 'b':
+	case 'B':
 		return 11;
-	case 'c':
+	case 'C':
 		return 12;
-	case 'd':
+	case 'D':
 		return 13;
-	case 'e':
+	case 'E':
 		return 14;
-	case 'f':
+	case 'F':
 		return 15;
 	default:
 		throw "Incorrect symbol";
@@ -96,12 +96,17 @@ BigInt::BigInt(std::string num)
 	}
 	int size = ceil((double)num.length() / 8);
 
+	blocks.clear();
+
 	// this blocks will create element of array
 	unsigned long block;
 
+	// We will ignore 0 at the start
+	bool isStart = true;
+
 	for (int i = num.length() - 1; i >= 0; i -= 8) {
 		unsigned long arrBlock = 0;
-		for (int j = 0; j < 8; j++)
+		for (int j = 0; j < LongSize / 4; j++)
 		{
 			if (i - j < 0) {
 				block = 0;
@@ -112,6 +117,11 @@ BigInt::BigInt(std::string num)
 
 			arrBlock |= (block << 4 * j);
 		}
+
+		if (isStart && arrBlock == 0) {
+			continue;
+		}
+
 		blocks.push_back(arrBlock);
 	}
 }
@@ -322,7 +332,38 @@ BigInt BigInt::operator*(const BigInt& second) const
 
 BigInt BigInt::operator/(const BigInt& second) const
 {
-	return BigInt();
+	if (second.isZero()) {
+		throw "Divide by zero";
+	}
+
+	if (this->operator<(second)) {
+		// return zero
+		return BigInt();
+	}
+
+	BigInt divided = *this;
+	BigInt divider = second;
+	BigInt res = BigInt();
+
+	while (divider <= divided) {
+		divider = divider << 1;
+	}
+	divider = divider >> 1;
+
+	while (divider >= second) {
+		if (divided < divider) {
+			divider = divider >> 1;
+			res = res << 1;
+		}
+		else {
+			divided = divided - divider;
+			divider = divider >> 1;
+			res = res << 1;
+			res = res + BigInt("1");
+		}
+	}
+
+	return res;
 }
 
 BigInt BigInt::operator<<(int n) const
@@ -363,4 +404,48 @@ BigInt BigInt::operator<<(int n) const
 	}
 
 	return res;
+}
+
+BigInt BigInt::operator>>(int n) const
+{
+	if (n < 0) {
+		throw "Incorrect amount of shift steps";
+	}
+
+	BigInt res;
+	res.blocks = blocks;
+	std::vector<unsigned long> resBlocks;
+
+	// Mask 0x80000000 (If long has 32 bits)
+	long longMask = ((ULONG_MAX >> LongSize - 1) << (LongSize - 1));
+
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < res.blocks.size() - 1; j++)
+		{
+			// If the next block has odd num - next block will be underflow, we need to add (long.max) to this one
+			resBlocks.push_back((res.blocks[j] >> 1) + (res.blocks[j + 1] % 2 == 1 ? longMask : 0));
+		}
+
+		// If the last block is 1, he will be 0 after shift - forget about it
+		if (res.blocks[res.blocks.size() - 1] != 1) {
+			resBlocks.push_back((res.blocks[res.blocks.size() - 1] >> 1));
+		}
+
+		res.blocks = resBlocks;
+		resBlocks.clear();
+	}
+
+	return res;
+}
+
+BigInt& BigInt::operator=(const BigInt second)
+{
+	this->blocks = second.blocks;
+	return *this;
+}
+
+bool BigInt::isZero() const
+{
+	return this->blocks.size() == 0;
 }

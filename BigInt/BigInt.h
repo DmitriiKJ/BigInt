@@ -39,5 +39,11 @@ public:
 
 	// Shift
 	BigInt operator<<(int n) const;
+	BigInt operator>>(int n) const;
+
+	BigInt& operator=(const BigInt second);
+
+	// Other
+	bool isZero() const;
 };
 

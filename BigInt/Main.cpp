@@ -45,8 +45,14 @@ int main() {
 	cout << "Subtract: " << bigNum4.toHexString() << endl;
 	cout << endl;
 
+	// 6983033291595 * 42073146227298 = 293798180787366508982960310 (f3062f4b49fac2020800b6)
 	BigInt bigNum5 = bigNum2 * bigNum1;
 	cout << "Mult: " << bigNum5.toHexString() << endl;
+	cout << endl;
+
+	// 42073146227298 / 6983033291595 = 6
+	BigInt bigNum6 = bigNum2 / bigNum1;
+	cout << "Subtract: " << bigNum6.toHexString() << endl;
 	cout << endl;
 
 	// Test for other functions
@@ -78,8 +84,11 @@ int main() {
 	
 	cout << endl;
 
-	// 15 * 4 = 60
+	// 15 * 4 = 60 (3ñ)
 	cout << "Shift: " << eq1.toHexString() << " << 2 = " << (eq1 << 2).toHexString() << endl;
+
+	// 12301370187 / 4 = 3 075 342 546 (b74e00d2)
+	cout << "Shift: " << BigInt("2dd38034b").toHexString() << " >> 2 = " << (BigInt("2dd38034b") >> 2).toHexString() << endl;
 
 	return 0;
 }

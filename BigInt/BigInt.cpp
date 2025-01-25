@@ -124,8 +124,8 @@ std::string BigInt::toHexStringFromData(std::vector<unsigned long> blocks)
 	bool isStart = true;
 
 	for (int i = blocks.size() - 1; i >= 0; i--) {
-		for (int j = 0; j < 8; j++) {
-			char symbol = byteToHexSymbol((unsigned char)(blocks[i] << j * 4 >> 28));
+		for (int j = 0; j < LongSize / 4; j++) {
+			char symbol = byteToHexSymbol((unsigned char)(blocks[i] << j * 4 >> LongSize - 4));
 			if (isStart)
 			{
 				if (symbol == '0') {
@@ -293,10 +293,74 @@ BigInt BigInt::operator-(const BigInt& second) const
 
 BigInt BigInt::operator*(const BigInt& second) const
 {
-	return BigInt();
+	BigInt res = BigInt("0");
+
+
+	// If we find the largest and the smallest value we can reduce the numver of iteration
+	std::vector<unsigned long> biggest = this->operator>=(second) ? this->blocks : second.blocks;
+
+	std::vector<unsigned long> smallest = this->operator<(second) ? this->blocks : second.blocks;
+
+	BigInt tmp;
+	tmp.blocks = biggest;
+
+	// We go through all the bits in the smallest number and if we have the bit 1 - we add the shifted biggest number (we shift the value at each iteration)
+	for (int i = 0; i < smallest.size(); i++)
+	{
+		for (int j = LongSize - 1; j >= 0; j--)
+		{
+			if (((smallest[i] << j) >> (LongSize - 1)) == 1) {
+				res = res + tmp;
+			}
+			// At each step we need to shift biggest value as in long multiplication.
+			tmp = tmp << 1;
+		}
+	}
+
+	return res;
 }
 
 BigInt BigInt::operator/(const BigInt& second) const
 {
 	return BigInt();
+}
+
+BigInt BigInt::operator<<(int n) const
+{
+	if (n < 0) {
+		throw "Incorrect amount of shift steps";
+	}
+
+	BigInt res;
+	res.blocks = blocks;
+	std::vector<unsigned long> resBlocks;
+
+	// We can't lose most significant bit
+	bool carry = false;
+
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < res.blocks.size(); j++)
+		{
+			// If carry is true - last block is overflow, we need to add 1
+			resBlocks.push_back((res.blocks[j] << 1) + (carry ? 1 : 0));
+
+			// If resBlocks[j] less than was in res.blocks[j] - overflow
+			if (resBlocks[j] < res.blocks[j]) {
+				carry = true;
+			}
+			else {
+				carry = false;
+			}
+		}
+
+		if (carry) {
+			resBlocks.push_back(1);
+		}
+
+		res.blocks = resBlocks;
+		resBlocks.clear();
+	}
+
+	return res;
 }

@@ -4,6 +4,8 @@
 #include <string>
 #include <cmath>
 
+const int LongSize = sizeof(long) * 8;
+
 bool isHex(std::string str);
 int hexSymbolToInt(char ch);
 char byteToHexSymbol(unsigned char byte);
@@ -29,10 +31,13 @@ public:
 	bool operator==(const BigInt& second) const;
 	bool operator!=(const BigInt& second) const;
 
-
+	// Math operators
 	BigInt operator+(const BigInt& second) const;
 	BigInt operator-(const BigInt& second) const;
 	BigInt operator*(const BigInt& second) const;
 	BigInt operator/(const BigInt& second) const;
+
+	// Shift
+	BigInt operator<<(int n) const;
 };
 

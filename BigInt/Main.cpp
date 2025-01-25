@@ -33,6 +33,7 @@ int main() {
 	if (bigNum1 != bigNum2) {
 		cout << "First num and second aren't equal" << endl;
 	}
+	cout << endl;
 
 	// 6983033291595 + 42073146227298 = 49056179518893 (2C9DC8277DAD)
 	BigInt bigNum3 = bigNum1 + bigNum2;
@@ -42,6 +43,10 @@ int main() {
 	// 42073146227298 - 6983033291595 = 35090112935703 (1FEA0DB77717)
 	BigInt bigNum4 = bigNum2 - bigNum1;
 	cout << "Subtract: " << bigNum4.toHexString() << endl;
+	cout << endl;
+
+	BigInt bigNum5 = bigNum2 * bigNum1;
+	cout << "Mult: " << bigNum5.toHexString() << endl;
 	cout << endl;
 
 	// Test for other functions
@@ -70,6 +75,11 @@ int main() {
 	if (eq1 != eq2) {
 		cout << "First num and second aren't equal" << endl;
 	}
+	
+	cout << endl;
+
+	// 15 * 4 = 60
+	cout << "Shift: " << eq1.toHexString() << " << 2 = " << (eq1 << 2).toHexString() << endl;
 
 	return 0;
 }
